@@ -62,14 +62,16 @@ NAS = ["A", "A5", "A3", "C", "C5", "C3", "G", "G5", "G3", "T", "T5", "T3", "U", 
 
 import math
 import copy
-from pdb import *
-from utilities import *
-from quatfit import *
-from forcefield import *
-from structures import *
-from protein import *
-from definitions import *
-from StringIO import StringIO
+import string
+
+from .pdbParser import *
+from .utilities import *
+from .quatfit import *
+from .forcefield import *
+from .structures import *
+from .protein import *
+from .definitions import *
+from io import StringIO
 
 class Routines:
     def __init__(self, protein, verbose, definition=None):
@@ -102,11 +104,10 @@ class Routines:
                 indent : The indent level (int, default=0)
         """
         out = ""
-        if self.verbose:
-            for i in range(indent):
-                out += "\t"
-            out += message
-            sys.stdout.write(out)
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(message.strip())
+
 
     def getWarnings(self):
         """
@@ -1022,7 +1023,7 @@ class Routines:
             if dist < cutoff:
                 bumpscore = bumpscore + 1000.0
                 #nearatoms[closeatom] = (dist-cutoff)**2
-        print 'BUMPSCORE', bumpscore
+        print('BUMPSCORE', bumpscore)
         return bumpscore
 
 
@@ -1574,76 +1575,75 @@ class Routines:
         for residue in self.protein.getResidues():
             residue.setDonorsAndAcceptors()
 
-    def runPROPKA(self, ph, ff, rootname, outname, options):
+
+    def delete_propka_input(self,fn):
+        """ Delete filename with extensions pdb->propka_input, and in the current directory"""
+
+        import os
+        p,f=os.path.split(fn)
+        f=f.replace('.pdb','.propka_input')
+        os.remove(f)
+
+    def runPROPKA31(self, pka_options):
         """
-            Run PROPKA on the current protein, setting protonation states to
-            the correct values
+            Run PROPKA 3.1 on the current protein, setting protonation states to
+            the correct values. pH is set in pka_options
             
             Parameters
-               ph:  The desired pH of the system
-               ff:  The forcefield name to be used
-               outname: The name of the PQR outfile
-        """
-        self.write("Running propka and applying at pH %.2f... " % ph)
+               ff:          The forcefield name to be used
+               pka_options: Options for propKa 3.1, including pH
 
-        from propka30.Source.protein import Protein as pkaProtein
-        from propka30.Source.pdb import readPDB as pkaReadPDB
-        from propka30.Source.lib import residueList
+            Returns
+               pka_molecule: pKa's internal molecule object (including pKa's, etc)
+               not_found:    dict of residues found in pka_molecule but not in PDB2PQR (with pKa)
+        """
+
+        # See https://github.com/jensengroup/propka-3.1/blob/master/scripts/propka31.py
+        import propka.molecular_container
+        import tempfile
+
+        ph = pka_options.pH
+        self.write("Running propka 3.1 at pH %.2f... " % ph)
 
         # Initialize some variables
-
-        linelen = 70
-        txt = ""
         pkadic = {}
-        warnings = []
 
-        # Reorder the atoms in each residue to start with N
-
+        # Reorder the atoms in each residue to start with N - TONI is this necessary?
         for residue in self.protein.getResidues():
             residue.reorder()
 
-        # Make a string with all non-hydrogen atoms
-
-        HFreeProteinFile = StringIO()
-
+        # TONI Make a string with all non-hydrogen atoms. Previously it was removing the "element"
+        # column and hydrogens. This does not seem to be necessary in propKa 3.1 .
+        HFreeProteinFile = tempfile.NamedTemporaryFile(mode="w+", suffix=".pdb")
         for atom in self.protein.getAtoms():
             if not atom.isHydrogen():
                 atomtxt = atom.getPDBString()
-                atomtxt = atomtxt[:linelen]
-                HFreeProteinFile.write(atomtxt)
-                HFreeProteinFile.write('\n')
-
-
+                HFreeProteinFile.write(atomtxt+'\n')
         HFreeProteinFile.seek(0)
 
-        # Run PropKa
+        # Run PropKa 3.1 -------------
 
-        atoms = pkaReadPDB('', file=HFreeProteinFile)
+        # Creating protein object. Annoyingly, at this stage propka generates a
+        # *.propka_input file in PWD and does not delete it (irregardless of the original .pdb location)
+        pka_molecule = propka.molecular_container.Molecular_container(HFreeProteinFile.name, pka_options)
+        self.delete_propka_input(HFreeProteinFile.name)
+        HFreeProteinFile.close()
 
-        # creating protein object
-        myPkaProtein = pkaProtein(atoms=atoms, name=rootname, options=options)
-        # calculating pKa values for ionizable residues
-        myPkaProtein.calculatePKA(options=options)
-        # printing pka file
-        myPkaProtein.writePKA(options=options, filename=outname)
+        # calculating pKa values for ionizable residues -
+        pka_molecule.calculate_pka()
 
-        # Parse the results
-        # This is the method used to generate the summary in the first place.
-        residue_list = residueList("propka1")
-        for chain in myPkaProtein.chains:
-            for residue_type in residue_list:
-                for residue in chain.residues:
-                    if residue.resName == residue_type:
-                        #String out the extra space after C- or N+ 
-                        key = string.strip('%s %s %s' % (string.strip(residue.resName),
-                                                        residue.resNumb, residue.chainID))
-                        pkadic[key] = residue.pKa_pro
+        ##  pka_molecule.write_pka()
+
+        for grp in pka_molecule.conformations['AVR'].groups:
+            key = str.strip('%s %s %s' % (grp.residue_type, grp.atom.resNumb, grp.atom.chainID))
+            pkadic[key] = grp.pka_value
+
+        pkadic_copy=pkadic.copy()
 
         if len(pkadic) == 0:
-            return
+            return pka_molecule, None, pkadic
 
         # Now apply each pka to the appropriate residue
-
         for residue in self.protein.getResidues():
             if not isinstance(residue, Amino):
                 continue
@@ -1653,100 +1653,41 @@ class Routines:
 
             if residue.isNterm:
                 key = "N+ %i %s" % (resnum, chainID)
-                key = string.strip(key)
+                key = str.strip(key)
                 if key in pkadic:
                     value = pkadic[key]
                     del pkadic[key]
                     if ph >= value:
-                        if ff in ["amber", "charmm", "tyl06", "peoepb", "swanson"]:
-                            warn = ("N-terminal %s" % key, "neutral")
-                            warnings.append(warn)
-                        else:
-                            self.applyPatch("NEUTRAL-NTERM", residue)
+                        self.applyPatch("NEUTRAL-NTERM", residue)
 
             if residue.isCterm:
                 key = "C- %i %s" % (resnum, chainID)
-                key = string.strip(key)
+                key = str.strip(key)
                 if key in pkadic:
                     value = pkadic[key]
                     del pkadic[key]
                     if ph < value:
-                        if ff in ["amber", "charmm", "tyl06", "peoepb", "swanson"]:
-                            warn = ("C-terminal %s" % key, "neutral")
-                            warnings.append(warn)
-                        else:
-                            self.applyPatch("NEUTRAL-CTERM", residue)
+                        self.applyPatch("NEUTRAL-CTERM", residue)
 
             key = "%s %i %s" % (resname, resnum, chainID)
-            key = string.strip(key)
+            key = str.strip(key)
             if key in pkadic:
                 value = pkadic[key]
                 del pkadic[key]
                 if resname == "ARG" and ph >= value:
-                    if ff == "parse":
                         self.applyPatch("AR0", residue)
-                    else:
-                        warn = (key, "neutral")
-                        warnings.append(warn)
                 elif resname == "ASP" and ph < value:
-                    if residue.isCterm and ff in ["amber", "tyl06", "swanson"]:
-                        warn = (key, "Protonated at C-Terminal")
-                        warnings.append(warn)
-                    elif residue.isNterm and ff in ["amber", "tyl06", "swanson"]:
-                        warn = (key, "Protonated at N-Terminal")
-                        warnings.append(warn)
-                    else:
                         self.applyPatch("ASH", residue)
                 elif resname == "CYS" and ph >= value:
-                    if ff == "charmm":
-                        warn = (key, "negative")
-                        warnings.append(warn)
-                    else:
                         self.applyPatch("CYM", residue)
                 elif resname == "GLU" and ph < value:
-                    if residue.isCterm and ff in ["amber", "tyl06", "swanson"]:
-                        warn = (key, "Protonated at C-Terminal")
-                        warnings.append(warn)
-                    elif residue.isNterm and ff in ["amber", "tyl06", "swanson"]:
-                        warn = (key, "Protonated at N-Terminal")
-                        warnings.append(warn)
-                    else:
                         self.applyPatch("GLH", residue)
                 elif resname == "HIS" and ph < value:
                     self.applyPatch("HIP", residue)
                 elif resname == "LYS" and ph >= value:
-                    if ff == "charmm":
-                        warn = (key, "neutral")
-                        warnings.append(warn)
-                    elif ff in ["amber", "tyl06", "swanson"] and residue.get("isCterm"):
-                        warn = (key, "neutral at C-Terminal")
-                        warnings.append(warn)
-                    elif ff == "tyl06" and residue.get("isNterm"):
-                        warn = (key, "neutral at N-Terminal")
-                        warnings.append(warn)
-                    else:
                         self.applyPatch("LYN", residue)
                 elif resname == "TYR" and ph >= value:
-                    if ff in ["charmm", "amber", "tyl06", "peoepb", "swanson"]:
-                        warn = (key, "negative")
-                        warnings.append(warn)
-                    else:
                         self.applyPatch("TYM", residue)
-
-        if len(warnings) > 0:
-            init = "WARNING: Propka determined the following residues to be\n"
-            self.warnings.append(init)
-            init = "         in a protonation state not supported by the\n"
-            self.warnings.append(init)
-            init = "         %s forcefield!\n" % ff
-            self.warnings.append(init)
-            init = "         All were reset to their standard pH 7.0 state.\n"
-            self.warnings.append(init)
-            self.warnings.append("\n")
-            for warn in warnings:
-                text = "             %s (%s)\n" % (warn[0], warn[1])
-                self.warnings.append(text)
-            self.warnings.append("\n")
 
         if len(pkadic) > 0:
             warn = "         PDB2PQR could not identify the following residues\n"
@@ -1755,10 +1696,43 @@ class Routines:
             self.warnings.append(warn)
             self.warnings.append("\n")
             for item in pkadic:
-                text = "             %s\n" % item
+                text = "             %s with pKa=%.2f\n" % (item, pkadic[item])
                 self.warnings.append(text)
             self.warnings.append("\n")
         self.write("Done.\n")
+        return pka_molecule, pkadic, pkadic_copy
+
+    def holdResidues(self, hlist):
+        """Set the stateboolean dictionary to residues in hlist."""
+
+        import logging
+        logger = logging.getLogger(__name__)
+
+        if not hlist:
+            return
+
+        hlist_copy = hlist.copy()
+        for residue in self.protein.getResidues():
+            reskey = (residue.resSeq, residue.chainID, residue.iCode)
+            if reskey in hlist:
+                hlist.remove(reskey)
+                if isinstance(residue, Amino):
+                    residue.stateboolean = { 'FIXEDSTATE': False }
+                    logger.info("Setting residue {:s} as fixed.".format(str(residue)))
+                else:
+                    logger.warning("Matched residue {:s} but not subclass of Amino".format(str(residue)))
+
+        if len(hlist)>0:
+            logger.warn("The following fixed residues were not matched (possible internal error): "+str(hlist))
+
+        """
+        optinstance = self.isOptimizeable(residue)
+        if isinstance(residue, Amino):
+            if False in list(residue.stateboolean.values()):
+                residue.fixed = 1
+        """
+
+
 
 class Cells:
     """
@@ -1799,15 +1773,26 @@ class Cells:
                 atom:  The atom to add (atom)
         """
         size = self.cellsize
+        # TONI Originally it was e.g.
+        #   if x < 0: x = (int(x) - 1) / size * size
+        #   else: x = int(x) / size * size
+        # in python3 division operator has a different behavior, so i changed
+        # to reproduce the old behavior even though it can be rewritten in a simpler way
         x = atom.get("x")
-        if x < 0: x = (int(x) - 1) / size * size
-        else: x = int(x) / size * size
+        if x < 0:
+            x = (int(x) - 1) // size * size
+        else:
+            x = int(x) // size * size
         y = atom.get("y")
-        if y < 0: y = (int(y) - 1) / size * size
-        else: y = int(y) / size * size
+        if y < 0:
+            y = (int(y) - 1) // size * size
+        else:
+            y = int(y) // size * size
         z = atom.get("z")
-        if z < 0: z = (int(z) - 1) / size * size
-        else: z = int(z) / size * size
+        if z < 0:
+            z = (int(z) - 1) // size * size
+        else:
+            z = int(z) // size * size
         key = (x, y, z)
         try:
             self.cellmap[key].append(atom)

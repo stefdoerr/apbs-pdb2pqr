@@ -48,10 +48,10 @@
 __date__ = "13 May 2008"
 __author__ = "Todd Dolinsky, Yong Huang"
 
-from pdb import *
-from structures import *
-from aa import *
-from na import *
+from .pdbParser import *
+from .structures import *
+from .aa import *
+from .na import *
 
 class Protein:
     """
@@ -143,11 +143,11 @@ class Protein:
 
         # Make a list for sequential ordering of chains
         
-        if chainDict.has_key(""):
+        if "" in chainDict:
             chainDict["ZZ"] = chainDict[""]
             del chainDict[""]
 
-        keys = chainDict.keys()
+        keys = list(chainDict.keys())
         keys.sort()
 
         for key in keys:
@@ -210,7 +210,9 @@ class Protein:
             elif atom.chainID != currentchainID:
                 currentchainID = atom.chainID
                 text.append("TER\n")
-            text.append("%s\n" % atom.getPQRString(chainflag=chainflag))
+            # TONI switching to PDB
+            # text.append("%s\n" % atom.getPQRString(chainflag=chainflag))
+            text.append(atom.getPDBString()+"\n")
         text.append("TER\nEND")
         return text
 

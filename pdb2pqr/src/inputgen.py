@@ -64,7 +64,7 @@ __date__ = "21 April 2007"
 __author__ = "Todd Dolinsky, Nathan Baker, Yong Huang"
 
 import string, sys
-import psize
+from .psize import Psize
 import pickle
 
 class Elec:
@@ -128,7 +128,7 @@ class Elec:
     
     def __str__(self):
         """
-            Return the elec statement as a string. Check the method
+            Return the elec statement as a str. Check the method
             to see which keywords to use.
         """
         text = "elec %s\n" % self.label
@@ -215,7 +215,7 @@ class Input:
             elec2 = ""
         self.elecs = [elec1, elec2]
      
-        i = string.rfind(pqrpath, "/") + 1
+        i = str.rfind(pqrpath, "/") + 1
         self.pqrname = pqrpath[i:]
 
         if not potdx:
@@ -241,7 +241,7 @@ class Input:
         """
             Make the input file(s) associated with this object
         """
-        period = string.find(self.pqrpath,".")
+        period = str.find(self.pqrpath,".")
         if self.asyncflag == 1:
             outname = self.pqrpath[0:period] + "-para.in"
 
@@ -278,12 +278,12 @@ class Input:
         """
             Make a Python pickle associated with the APBS input parameters
         """
-        period = string.find(self.pqrpath,".")
+        period = str.find(self.pqrpath,".")
         if period > 0:
             outname = self.pqrpath[0:period] + "-input.p"
         else:
             outname = self.pqrpath + "-input.p"
-        pfile = open(outname, "w")
+        pfile = open(outname, "wb")
         pickle.dump(self, pfile)
         pfile.close()
         
@@ -303,9 +303,9 @@ def splitInput(filename):
         line = file.readline()
         if line == "": break
         text += line
-        line = string.strip(line)
+        line = str.strip(line)
         if line.startswith("pdime"): # Get # Procs
-            words = string.split(line)
+            words = str.split(line)
             nproc = int(words[1]) * int(words[2]) * int(words[3])
 
     if nproc == 0:
@@ -313,10 +313,10 @@ def splitInput(filename):
         sys.stderr.write("The inputgen script was unable to asynchronize this file!\n")
         sys.exit(2)
 
-    period = string.find(filename,".")
+    period = str.find(filename,".")
     for i in range(nproc):
         outname = filename[0:period] + "-PE%i.in" % i
-        outtext = string.replace(text, "mg-para\n","mg-para\n    async %i\n" % i)
+        outtext = str.replace(text, "mg-para\n","mg-para\n    async %i\n" % i)
         outfile = open(outname, "w")
         outfile.write(outtext)
         outfile.close()
@@ -325,7 +325,7 @@ def usage():
     """
         Display the usage information for this script
     """
-    size = psize.Psize()
+    size = Psize()
     usage = "\n"
     usage = usage + "Use this script to generate new APBS input files or split an existing\n"
     usage = usage + "parallel input file into multiple async files.\n\n"
@@ -373,7 +373,7 @@ def main():
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], shortOptList, longOptList)
-    except getopt.GetoptError, details:
+    except getopt.GetoptError as details:
         sys.stderr.write("Option error (%s)!\n" % details)
         usage()
         
@@ -384,7 +384,7 @@ def main():
         filename = args[0]
 
     method = ""
-    size = psize.Psize()
+    size = Psize()
     async = 0
     split = 0
     istrng = 0

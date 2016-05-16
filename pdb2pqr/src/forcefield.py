@@ -57,8 +57,8 @@ import os
 import re
 
 from xml import sax
-from utilities import *
-from errors import PDBInputError, PDBInternalError
+from .utilities import *
+from .errors import PDBInputError, PDBInternalError
 
 class ForcefieldHandler(sax.ContentHandler):
    
@@ -233,7 +233,7 @@ class Forcefield:
         if userff == None:
             defpath = getFFfile(ff)
             if defpath == "":
-                raise PDBInputError, "Unable to find forcefield parameter file %s!" % self.name
+                raise PDBInputError("Unable to find forcefield parameter file %s!" % self.name)
           
             file = open(defpath, 'rU')
 
@@ -243,7 +243,7 @@ class Forcefield:
         lines = file.readlines()
         for line in lines:
             if not line.startswith("#"):
-                fields = string.split(line)
+                fields = str.split(line)
                 if fields == []: continue  
                 try:
                     resname = fields[0]
@@ -285,7 +285,7 @@ class Forcefield:
                 namesfile = usernames
                 sax.parseString(namesfile.read(), handler)
             else:
-                namesfile = open(defpath)
+                namesfile = open(defpath,'rb')
                 sax.parseString(namesfile.read(), handler)
             namesfile.close()
         else: 
@@ -353,7 +353,7 @@ class Forcefield:
     def getGroup(self, resname, atomname):
         """
             Get the group/type associated with the input
-            fields.  If not found, return a null string.
+            fields.  If not found, return a null str.
             
             Parameters:
                 resname:  The residue name (string)
@@ -776,7 +776,7 @@ class Forcefield:
             elif atomname == "C": atomname = "CY"
             elif atomname == "O": atomname = "OY"
         elif resname == "ADP":
-            atomname = string.replace(atomname,"*","\'")
+            atomname = str.replace(atomname,"*","\'")
         elif resname == "NME":
             resname = "CT3"
             if atomname == "HH31": atomname = "HT1"

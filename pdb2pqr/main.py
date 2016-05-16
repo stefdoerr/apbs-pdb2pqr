@@ -56,25 +56,30 @@ from optparse import OptionParser, OptionGroup
 import os
 import time
 import copy
-from src import pdb
-from src import utilities
-from src import structures
-from src import routines
-from src import protein
-from src.pdb import *
-from src.utilities import *
-from src.structures import *
-from src.definitions import *
-from src.forcefield import *
-from src.routines import *
-from src.protein import *
-from src.server import *
-from src.hydrogens import *
-from src.aconf import *
-from StringIO import *
-from src.errors import PDB2PQRError
+#from src import pdb
+from .src import utilities
+from .src import structures
+from .src import routines
+from .src import protein
+from .src.pdbParser import *
+from .src.utilities import *
+from .src.structures import *
+from .src.definitions import *
+from .src.forcefield import *
+from .src.routines import *
+from .src.protein import *
+from .src.server import *
+from .src.hydrogens import *
+from .src.aconf import *
+from io import *
+from .src.errors import PDB2PQRError
 
-import extensions
+from .extensions import *
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 def getOldHeader(pdblist):
     oldHeader = StringIO()
@@ -152,6 +157,7 @@ def printPQRHeader(pdblist, atomlist, reslist, charge, ff, warnings, pH, ffout):
     
     return header
 
+# TONI: Note this interface originally only provided text output.
 def runPDB2PQR(pdblist, ff,
                outname = "",
                ph = None,
@@ -170,7 +176,8 @@ def runPDB2PQR(pdblist, ff,
                typemap = False,
                userff = None,
                usernames = None,
-               ffout = None):
+               ffout = None,
+               holdList = None):
     """
         Run the PDB2PQR Suite
 
@@ -181,12 +188,12 @@ def runPDB2PQR(pdblist, ff,
         
         Keyword Arguments:
             outname:       The name of the desired output file
-            ph:            The desired ph of the system (float)
+            ph:            The desired ph of the system (float). Will overwrite the one in propkaOptions
             verbose:       When True, script will print information to stdout
                              When False, no detailed information will be printed (float)
             extensions:      List of extensions to run
             extensionOptions:optionParser like option object that is passed to each object. 
-            propkaOptions:optionParser like option object for propka30.
+            propkaOptions: optionParser like option object for propka31.
             clean:         only return original PDB file in aligned format.
             neutraln:      Make the N-terminus of this protein neutral
             neutralc:      Make the C-terminus of this protein neutral
@@ -206,15 +213,16 @@ def runPDB2PQR(pdblist, ff,
             lines:   The PQR file atoms (list)
             missedligandresidues:  A list of ligand residue names whose charges could
                      not be assigned (ligand)
+            protein: The protein object - note that it includes propka's object
+                     in properties .pka_mol and .pka_pka_not_found
     """
     
-    pkaname = ""
     outroot = ""
     lines = []
     Lig = None
     atomcount = 0   # Count the number of ATOM records in pdb
     
-    period = string.rfind(outname,".")
+    period = str.rfind(outname,".")
     
     if period > 0: 
         outroot = outname[0:period]
@@ -223,21 +231,18 @@ def runPDB2PQR(pdblist, ff,
 
     if not ph is None:
         pka = True
-        pkaname = outroot + ".propka"
-        #TODO: What? Shouldn't it be up to propka on how to handle this?
-        if os.path.isfile(pkaname): 
-            os.remove(pkaname)
-    else: 
+        propkaOptions.pH=ph
+    else:
         pka = False
 
     start = time.time()
 
     if verbose:
-        print "Beginning PDB2PQR...\n"
+        print("Beginning PDB2PQR...\n")
 
     myDefinition = Definition()
     if verbose:
-        print "Parsed Amino Acid definition file."   
+        print("Parsed Amino Acid definition file.")   
 
     # Check for the presence of a ligand!  This code is taken from pdb2pka/pka.py
 
@@ -251,9 +256,9 @@ def runPDB2PQR(pdblist, ff,
         myProtein = Protein(pdblist, myDefinition)
 
     if verbose:
-        print "Created protein object -"
-        print "\tNumber of residues in protein: %s" % myProtein.numResidues()
-        print "\tNumber of atoms in protein   : %s" % myProtein.numAtoms()
+        print("Created protein object -")
+        print("\tNumber of residues in protein: %s" % myProtein.numResidues())
+        print("\tNumber of atoms in protein   : %s" % myProtein.numAtoms())
         
     myRoutines = Routines(myProtein, verbose)
 
@@ -263,7 +268,7 @@ def runPDB2PQR(pdblist, ff,
             if atom.altLoc != "":
                 multoccupancy = 1
                 txt = "Warning: multiple occupancies found: %s in %s\n" % (atom.name, residue)
-                sys.stderr.write(txt)
+                logger.warning(txt)
         if multoccupancy == 1:
             myRoutines.warnings.append("WARNING: multiple occupancies found in %s,\n" % (residue))
             myRoutines.warnings.append("         at least one of the instances is being ignored.\n")
@@ -282,7 +287,7 @@ def runPDB2PQR(pdblist, ff,
             module.run_extension(tempRoutines, outroot, extensionOptions)
     
         if verbose:
-            print "Total time taken: %.2f seconds\n" % (time.time() - start)
+            print("Total time taken: %.2f seconds\n" % (time.time() - start))
         
         #Be sure to include None for missed ligand residues
         return header, lines, None
@@ -305,7 +310,10 @@ def runPDB2PQR(pdblist, ff,
             myRoutines.debumpProtein()  
 
         if pka:
-            myRoutines.runPROPKA(ph, ff, outroot, pkaname, propkaOptions)
+            pka_molecule, pka_not_found, pkadic = myRoutines.runPROPKA31(propkaOptions)
+            myProtein.pka_molecule = pka_molecule
+            myProtein.pka_not_found = pka_not_found
+            myProtein.pkadic = pkadic
 
         myRoutines.addHydrogens()
 
@@ -316,6 +324,8 @@ def runPDB2PQR(pdblist, ff,
 
         if opt:
             myhydRoutines.setOptimizeableHydrogens()
+            # TONI fixing residues - myhydRoutines has a reference to myProtein, so i'm altering it in place
+            myRoutines.holdResidues(holdList)
             myhydRoutines.initializeFullOptimization()
             myhydRoutines.optimizeHydrogens()
         else:
@@ -416,9 +426,11 @@ def runPDB2PQR(pdblist, ff,
         
 
     if verbose:
-        print "Total time taken: %.2f seconds\n" % (time.time() - start)
+        print("Total time taken: %.2f seconds\n" % (time.time() - start))
 
-    return header, lines, missedligandresidues
+    return header, lines, missedligandresidues, myProtein
+
+
 
 def mainCommand(argv):
     """
@@ -511,7 +523,7 @@ def mainCommand(argv):
                       help='Use propka to calculate pKas and apply them to the molecule given the pH value. ' +
                            'Actual PropKa results will be output to <output-path>.propka.')
     
-    propkaroup.add_option("--reference", dest="reference", default="neutral", 
+    propkaroup.add_option("--reference", dest="reference", default="neutral",
            help="setting which reference to use for stability calculations [neutral/low-pH]")
     
     parser.add_option_group(propkaroup)
@@ -598,8 +610,8 @@ def mainCommand(argv):
         parser.error("Unable to find file %s!" % path)
 
     if len(errlist) != 0 and options.verbose:
-        print "Warning: %s is a non-standard PDB file.\n" % path
-        print errlist
+        print("Warning: %s is a non-standard PDB file.\n" % path)
+        print(errlist)
 
     outpath = args[1]
     options.outname = outpath
@@ -611,13 +623,14 @@ def mainCommand(argv):
     #I see no point in hiding options from extensions.
     extensionOpts = options
 
+
     #TODO: The ideal would be to pass a file like object for the second
     # argument and add a third for names then
     # get rid of the userff and username arguments to this function.
     # This would also do away with the redundent checks and such in 
     # the Forcefield constructor.
     try:
-        header, lines, missedligands = runPDB2PQR(pdblist, 
+        header, lines, missedligands, protein = runPDB2PQR(pdblist,
                                                   options.ff, 
                                                   outname = options.outname,
                                                   ph = options.pH,
@@ -638,7 +651,7 @@ def mainCommand(argv):
                                                   usernames = usernamesfile,
                                                   ffout = options.ffout)
     except PDB2PQRError as er:
-        print er
+        print(er)
         sys.exit(1)
     
     # Print the PQR file

@@ -46,20 +46,22 @@
 __date__ = "15 May 2008"
 __author__ = "Jens Erik Nielsen, Todd Dolinsky, Yong Huang"
 
-AAPATH = "dat/AA.xml"
-NAPATH = "dat/NA.xml"
-PATCHPATH = "dat/PATCHES.xml"
-
 import os
 import copy
 import re
 from xml import sax
-from pdb import *
-from utilities import *
-from structures import *
-from routines import *
+from .pdbParser import *
+from .utilities import *
+from .structures import *
+from .routines import *
+from .errors import PDBInternalError
 
-from errors import PDBInternalError
+
+datpath = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'dat')
+AAPATH = "{}/AA.xml".format(datpath)
+NAPATH = "{}/NA.xml".format(datpath)
+PATCHPATH = "{}/PATCHES.xml".format(datpath)
+
 
 class DefinitionHandler(sax.ContentHandler):
    
@@ -113,8 +115,7 @@ class DefinitionHandler(sax.ContentHandler):
                 self.patches.append(patch)
                 self.curholder = None
                 self.curobj = None
-        
-        
+
         elif name == "atom": # Complete atom object
             atom = self.curatom
             if not isinstance(atom, DefinitionAtom):
@@ -176,7 +177,7 @@ class Definition:
             if defpath == "":
                 raise PDBInternalError("%s not found!" % path)
 
-            acidFile = open(defpath)
+            acidFile = open(defpath,'rb')
             sax.parseString(acidFile.read(), handler)
             acidFile.close()
 
@@ -189,7 +190,7 @@ class Definition:
             raise PDBInternalError("%s not found!" % PATCHPATH)
      
         handler.map = {}
-        patchFile = open(defpath)
+        patchFile = open(defpath,'rb')
         sax.parseString(patchFile.read(), handler)
         patchFile.close()
 
@@ -201,7 +202,7 @@ class Definition:
 
                 # Find all residues matching applyto
 
-                resnames = self.map.keys()
+                resnames = list(self.map.keys())
                 for name in resnames:
                     regexp = re.compile(patch.applyto).match(name)
                     if not regexp: continue

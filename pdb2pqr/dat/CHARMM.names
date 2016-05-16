@@ -101,18 +101,6 @@
         <useresname>CYS</useresname>
     </residue>
     <residue>
-        <name>CYX</name>
-        <useresname>DISU</useresname>
-        <atom>
-            <name>CB</name>
-            <useatomname>1CB</useatomname>
-        </atom>
-        <atom>
-            <name>SG</name>
-            <useatomname>1SG</useatomname>
-        </atom>
-    </residue>
-    <residue>
         <name>HI([PDE])$</name>
         <useresname>HS$group</useresname>
     </residue>

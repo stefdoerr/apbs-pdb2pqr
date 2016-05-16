@@ -47,18 +47,19 @@ import os
 import string
 import math
 
-from definitions import *
-from utilities import *
-from quatfit import *
-from routines import *
-import topology
+from .definitions import *
+from .utilities import *
+from .quatfit import *
+from .routines import *
+from .topology import Topology
 
 __date__ = "22 April 2009"
 __author__ = "Todd Dolinsky, Jens Erik Nielsen, Yong Huang"
 
+datpath = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'dat')
 HDEBUG = 0
-HYDPATH = "dat/HYDROGENS.xml"
-TOPOLOGYPATH = "dat/TOPOLOGY.xml"
+HYDPATH = "{}/HYDROGENS.xml".format(datpath)
+TOPOLOGYPATH = "{}/TOPOLOGY.xml".format(datpath)
 ANGLE_CUTOFF = 20.0       # A - D - H(D) angle
 DIST_CUTOFF = 3.3         # H(D) to A distance
 
@@ -219,7 +220,7 @@ class Optimize:
         """
             Easy way to turn on/off debugging
         """
-        if HDEBUG: print txt
+        if HDEBUG: print(txt)
 
     @staticmethod
     def getHbondangle(atom1, atom2, atom3):
@@ -1035,7 +1036,7 @@ class Alcoholic(Optimize):
         self.atomlist = []
         self.hbonds = []
 
-        name = optinstance.map.keys()[0]
+        name = list(optinstance.map.keys())[0]
         self.hname = name
         
         bondname = residue.reference.getAtom(name).bonds[0]
@@ -1595,7 +1596,7 @@ class Carboxylic(Optimize):
 
         hname2 = ""
         hname1 = ""
-        for name in optinstance.map.keys():
+        for name in list(optinstance.map.keys()):
             if name.endswith("2"): hname2 = name
             else: hname1 = name
 
@@ -1902,7 +1903,7 @@ class Carboxylic(Optimize):
         optinstance = self.optinstance        
 
         # No need to rename if hydatom is not in residue.map
-        if hydatom.name not in residue.map.keys():
+        if hydatom.name not in list(residue.map.keys()):
             return
         # Take off the extension
         if len(hydatom.name) == 4:
@@ -1941,7 +1942,7 @@ class Carboxylic(Optimize):
                     pass
 
             if hydatom.name.endswith("1"):
-                if (hydatom.name[:-1] + "2") in residue.map.keys():
+                if (hydatom.name[:-1] + "2") in list(residue.map.keys()):
                     residue.removeAtom("%s2" % hydatom.name[:-1])
                 residue.renameAtom(hydatom.name, "%s2" % hydatom.name[:-1])
                 bondname0 = self.atomlist[0].name
@@ -2021,7 +2022,7 @@ class hydrogenRoutines:
         if defpath == "":
             raise PDBInternalError("Could not find %s!" % HYDPATH) 
      
-        hydrogenFile = open(defpath)
+        hydrogenFile = open(defpath,'rb')
         sax.parseString(hydrogenFile.read(), handler)
         hydrogenFile.close()
 
@@ -2034,7 +2035,7 @@ class hydrogenRoutines:
             Parameters
                 text:  The text to output (string)
         """
-        if HDEBUG: print text  
+        if HDEBUG: print(text)  
 
     def switchstate(self, states, amb, stateID):
         """
@@ -2069,7 +2070,7 @@ class hydrogenRoutines:
             hname = conf.hname
             boundname = conf.boundatom
             if residue.getAtom(hname) != None:
-                print 'Removing',residue.name,residue.resSeq,hname
+                print('Removing',residue.name,residue.resSeq,hname)
                 residue.removeAtom(hname)
             residue.getAtom(boundname).hacceptor = 1
             residue.getAtom(boundname).hdonor = 0
@@ -2088,7 +2089,7 @@ class hydrogenRoutines:
         # Now build appropriate atoms
         state = states[stateID]
         for conf in state:
-            print conf
+            print(conf)
             refcoords = []
             defcoords = []
             defatomcoords = []
@@ -2271,7 +2272,7 @@ class hydrogenRoutines:
 
         if optinstance != None:
             if optinstance.opttype == "Alcoholic":
-                atomname = optinstance.map.keys()[0]
+                atomname = list(optinstance.map.keys())[0]
                 if not residue.reference.hasAtom(atomname):
                     optinstance = None
                    
@@ -2317,7 +2318,7 @@ class hydrogenRoutines:
         for residue in self.protein.getResidues():
             optinstance = self.isOptimizeable(residue)
             if isinstance(residue, Amino):
-                if False in residue.stateboolean.values():
+                if False in list(residue.stateboolean.values()):
                     residue.fixed = 1
                 else:
                     residue.fixed = 0 
@@ -2599,7 +2600,7 @@ class hydrogenRoutines:
             raise PDBInternalError("Could not find %s!" % TOPOLOGYPATH) 
      
         topfile = open(toppath)
-        top = topology.Topology(topfile)
+        top = Topology(topfile)
         topfile.close()
 
 
@@ -2730,7 +2731,7 @@ class hydrogenRoutines:
             refatoms = ['OE1', 'CD', 'OE2']
         else:
             patchmap = self.routines.protein.patchmap[name]
-            atoms = patchmap.map.keys()
+            atoms = list(patchmap.map.keys())
             atoms.sort()
 
         if name in ['NTR']:

@@ -52,7 +52,10 @@ DIHEDRAL = 57.2958
 import math
 import os
 import sys
-from aconf import INSTALLDIR, TMPDIR
+from .aconf import INSTALLDIR, TMPDIR
+
+datpath = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'dat')
+
 
 def startLogFile(jobName, fileName, logInput):
     with open('%s%s%s/%s' % (INSTALLDIR, TMPDIR, jobName, fileName), 'w') as f:
@@ -166,7 +169,7 @@ def sortDictByValue(inputdict):
         Returns
             items: The dictionary sorted by value (list)
     """
-    items = [(v, k) for k, v in inputdict.items()]
+    items = [(v, k) for k, v in list(inputdict.items())]
     items.sort()
     items.reverse()             
     items = [ k for v, k in items]
@@ -196,7 +199,7 @@ def shortestPath(graph, start, end, path=[]):
     path = path + [start]
     if start == end:
         return path
-    if not graph.has_key(start):
+    if start not in graph:
         return None
     shortest = None
     for node in graph[start]:
@@ -273,11 +276,11 @@ def getFFfile(name):
     dirs = sys.path + ["dat"]
     if name in ["amber", "charmm", "parse", "tyl06", "peoepb", "swanson"]: name = name.upper()
 
-    names = ["dat/%s.DAT" % name]
+    names = ["{}/{}.DAT".format(datpath, name)]
     
     names.append("%s.DAT" % name)
     names.append("%s.dat" % name)
-    names.append("dat/%s" % name)
+    names.append("{}/%s".format(datpath, name))
     names.append(name)
 
     for guess in names:
@@ -310,7 +313,7 @@ def getNamesFile(name):
     dirs = sys.path + ["dat"]
     if name in ["amber", "charmm", "parse", "tyl06", "peoepb", "swanson"]: name = name.upper()
 
-    names = ["dat/%s.names" % name]
+    names = ["{}/{}.names".format(datpath, name)]
     names.append("%s.names" % name)
   
     for guess in names:
@@ -361,14 +364,14 @@ def getPDBFile(path):
             file:  File object containing PDB file (file object)
     """
 
-    import urllib
+    import urllib.request, urllib.parse, urllib.error
 
     file = None
     if not os.path.isfile(path):
         URLpath = "http://www.rcsb.org/pdb/cgi/export.cgi/" + path + \
                   ".pdb?format=PDB&pdbId=" + path + "&compression=None"
         try:
-            file = urllib.urlopen(URLpath)
+            file = urllib.request.urlopen(URLpath)
             if file.getcode() != 200 or 'nosuchfile' in file.geturl() :
                 raise IOError
         except IOError:
