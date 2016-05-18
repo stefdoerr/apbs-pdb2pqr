@@ -8,7 +8,6 @@
 __date__ = "21 October 2011"
 __author__ = "Kyle Monson"
 
-import extensions
 
 def usage():
     """

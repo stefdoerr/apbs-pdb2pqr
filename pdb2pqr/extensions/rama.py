@@ -10,8 +10,7 @@
 __date__ = "17 February 2006"
 __author__ = "Mike Bradley, Todd Dolinsky"
   
-from src.utilities import getDihedral
-import extensions
+from ..src.utilities import getDihedral
 
 def addExtensionOptions(extensionGroup):
     """

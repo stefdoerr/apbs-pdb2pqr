@@ -27,10 +27,10 @@ __author__ = "Todd Dolinsky, Michael J Bradley, Julie Mitchell, and Kyle Monson"
 #inter-domain allosteric communication pathways. Journal of Molecular Biology, 378, 
 #1155-1173, 2008.  http://dx.doi.org/10.1016/j.jmb.2008.03.010
 
-from src.utilities import distance, getAngle
-from src.routines import Cells
+from ..src.utilities import distance, getAngle
+from ..src.routines import Cells
 from math import cos
-import extensions
+
 
 ANGLE_CUTOFF = 30.0       # A - D - H(D) angle
 DIST_CUTOFF = 3.4         # D to A distance

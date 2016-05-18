@@ -47,34 +47,16 @@
 __date__  = "5 April 2010"
 __author__ = "Todd Dolinsky, Nathan Baker, Jens Nielsen, Paul Czodrowski, Jan Jensen, Samir Unni, Yong Huang"
 
-import string
-import sys
-import getopt
 from optparse import OptionParser, OptionGroup
-import os
-import time
-import copy
-from src import pdb
-from src import utilities
-from src import structures
-from src import routines
-from src import protein
-from src.pdb import *
-from src.utilities import *
-from src.structures import *
-from src.definitions import *
-from src.forcefield import *
-from src.routines import *
-from src.protein import *
-from src.server import *
-from src.hydrogens import *
-from src.aconf import *
-from io import StringIO
-from src.errors import PDB2PQRError
+
+from .src import utilities
+from .src.errors import PDB2PQRError
+from .src.hydrogens import *
+from .src.server import *
 
 __version__ = "FIXME"
 
-import extensions
+from . import extensions
 
 def getOldHeader(pdblist):
     oldHeader = StringIO()
@@ -558,11 +540,11 @@ def mainCommand(argv):
     pka_group.add_option('--ph-calc-method', dest='ph_calc_method', metavar='PH_METHOD', choices=('propka', 'propka31', 'pdb2pka'),
                       help='Method used to calculate ph values. If a pH calculation method is selected, for each'
                       ' titratable residue pH values will be calculated and the residue potentially modified'
-                      ' after comparison with the pH value supplied by --with_ph\n'
+                      ' after comparison with the pH value supplied by --with_ph. Valid options are: '
                       'propka - Use PROPKA to calculate pH values. Actual PROPKA results will be output to <output-path>.propka.\n'
                       'propka31 - Use PROPKA 3.1 to calculate pH values. Actual PROPKA results will be output to <output-path>.propka.\n'
-                      'pdb2pka - Use PDB2PKA to calculate pH values. Requires the use of the PARSE force field.'
-                      ' Warning: Larger residues can take a very long time to run using this method. EXPERIMENTAL!')
+                      'pdb2pka - (EXPERIMENTAL) Use PDB2PKA to calculate pH values. Requires the use of the PARSE force field.'
+                      ' Warning: Larger residues can take a very long time to run using this method. ')
 
     pka_group.add_option('--with-ph', dest='ph', action='store', type='float', default=7.0,
                       help='pH values to use when applying the results of the selected pH calculation method.'

@@ -11,7 +11,7 @@
 __date__ = "17 February 2006"
 __author__ = "Todd Dolinsky"
 
-from src.utilities import getDihedral
+from ..src.utilities import getDihedral
 
 def usage():
     return 'Print the per-residue backbone chi angle to {output-path}.chi'

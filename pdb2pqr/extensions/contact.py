@@ -11,8 +11,8 @@
 __date__ = "April 2007"
 __author__ = "Julie C. Mitchell"
 
-from src.utilities import distance
-from src.routines import Cells
+from ..src.utilities import distance
+from ..src.routines import Cells
 
 DIST_CUTOFF = 3.5         # max distance  
 

@@ -1,0 +1,7 @@
+#!/usr/bin/python
+
+import sys
+from pdb2pqr import main
+
+main.mainCommand(sys.argv)
+

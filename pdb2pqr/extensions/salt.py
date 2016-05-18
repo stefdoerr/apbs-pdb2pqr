@@ -16,8 +16,8 @@
 __date__ = "25 August 2006"
 __author__ = "Mike Bradley"
 
-from src.utilities import distance
-from src.routines import Cells
+from ..src.utilities import distance
+from ..src.routines import Cells
 
 DIST_CUTOFF = 4.0         # maximum cation to anion atom distance in angstroms
 

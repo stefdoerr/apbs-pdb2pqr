@@ -7,11 +7,10 @@
 __date__ = "21 October 2011"
 __authors__ = "Kyle Monson and Emile Hogan"
 
-import extensions
-from src.hydrogens import Optimize
+from ..src.hydrogens import Optimize
 #itertools FTW!
 from itertools import product, permutations, count
-from src.hydrogens import hydrogenRoutines
+from ..src.hydrogens import hydrogenRoutines
 
 #Here are the Ri -> [Ri0, Ri1] maps:
 #ARG -> [{AR0}, {ARG}]
