@@ -278,6 +278,7 @@ def getFFfile(name):
     
     path = ""
     dirs = sys.path + ["dat"]
+    dirs = dirs + [os.path.abspath(os.path.join(__file__,"..","..","dat"))]
     if name in ["amber", "charmm", "parse", "tyl06", "peoepb", "swanson"]: name = name.upper()
 
     names = ["dat/%s.DAT" % name]
@@ -315,6 +316,8 @@ def getNamesFile(name):
     
     path = ""
     dirs = sys.path + ["dat"]
+    dirs = dirs + [os.path.abspath(os.path.join(__file__,"..","..","dat"))]
+
     if name in ["amber", "charmm", "parse", "tyl06", "peoepb", "swanson"]: name = name.upper()
 
     names = ["dat/%s.names" % name]
@@ -344,11 +347,13 @@ def getDatFile(name):
             path:  The path to the file (string)
     """
     path = ""
+    dirs = sys.path;
+    dirs = dirs + [os.path.abspath(os.path.join(__file__,"..",".."))]
 
     if os.path.isfile(name):
         path = name
 
-    for p in sys.path:
+    for p in dirs:
         testpath = "%s/%s" % (p, name)
         if os.path.isfile(testpath):
             path = testpath
@@ -368,7 +373,7 @@ def getPDBFile(path):
             file:  File object containing PDB file (file object)
     """
 
-    import os
+    import os, urllib.request
 
     file = None
     if not os.path.isfile(path):
