@@ -16,6 +16,9 @@ class build_py(build_py):
                 if tmp[0] == "build/lib/pdb2pqr" and not tmp[1] in ['__init__.py', 'main.py']:
                     print(file + "<--- DELETED")
                     os.unlink(file)
+                if tmp[0] == "build/lib/pdb2pqr/pdb2pka":
+                    print(file + "<--- DELETED")
+                    os.unlink(file)
 
 
 setup(name='pdb2pqr',
