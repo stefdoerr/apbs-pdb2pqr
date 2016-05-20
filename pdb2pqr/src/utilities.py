@@ -53,13 +53,14 @@ import math
 import os
 from os.path import splitext 
 import sys
-from .aconf import INSTALLDIR, TMPDIR
 
 def startLogFile(jobName, fileName, logInput):
+    from .aconf import INSTALLDIR, TMPDIR
     with open('%s%s%s/%s' % (INSTALLDIR, TMPDIR, jobName, fileName), 'w') as f:
         f.write(logInput)
         
 def appendToLogFile(jobName, fileName, logInput):
+    from .aconf import INSTALLDIR, TMPDIR
     with open('%s%s%s/%s' % (INSTALLDIR, TMPDIR, jobName, fileName), 'a') as f:
         f.write(logInput)
         
@@ -68,6 +69,7 @@ def resetLogFile(jobName, fileName):
     For clearing out old log files if needed.
     Used mainly for removing apbs_end_time if apbs is rerun.
     """
+    from .aconf import INSTALLDIR, TMPDIR
     filename = '%s%s%s/%s' % (INSTALLDIR, TMPDIR, jobName, fileName)
     try:
         os.remove(filename)

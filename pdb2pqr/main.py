@@ -49,10 +49,12 @@ __author__ = "Todd Dolinsky, Nathan Baker, Jens Nielsen, Paul Czodrowski, Jan Je
 
 from optparse import OptionParser, OptionGroup
 
+import time
+
 from .src import utilities
 from .src.errors import PDB2PQRError
 from .src.hydrogens import *
-from .src.server import *
+
 
 __version__ = "FIXME"
 
