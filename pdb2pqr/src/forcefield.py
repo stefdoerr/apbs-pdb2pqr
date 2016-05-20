@@ -286,7 +286,7 @@ class Forcefield:
                 sax.parseString(namesfile.read(), handler)
             else:
                 namesfile = open(defpath)
-                sax.parseString(namesfile.read(), handler)
+                sax.parseString(namesfile.read().encode('utf-8'), handler)
             namesfile.close()
         else: 
             handler = ForcefieldHandler(self.map, definition.map)

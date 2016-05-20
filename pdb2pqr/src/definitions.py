@@ -177,7 +177,7 @@ class Definition:
                 raise PDBInternalError("%s not found!" % path)
 
             acidFile = open(defpath)
-            sax.parseString(acidFile.read(), handler)
+            sax.parseString(acidFile.read().encode('utf-8'), handler)
             acidFile.close()
 
             self.map.update(handler.map)
@@ -190,7 +190,7 @@ class Definition:
      
         handler.map = {}
         patchFile = open(defpath)
-        sax.parseString(patchFile.read(), handler)
+        sax.parseString(patchFile.read().encode('utf-8'), handler)
         patchFile.close()
 
         # Apply specific patches to the reference object, allowing users

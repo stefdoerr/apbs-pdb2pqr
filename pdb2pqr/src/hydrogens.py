@@ -2026,7 +2026,7 @@ class hydrogenRoutines:
             raise PDBInternalError("Could not find %s!" % HYDPATH) 
      
         hydrogenFile = open(defpath)
-        sax.parseString(hydrogenFile.read(), handler)
+        sax.parseString(hydrogenFile.read().encode('utf-8'), handler)
         hydrogenFile.close()
 
         self.map = handler.map
