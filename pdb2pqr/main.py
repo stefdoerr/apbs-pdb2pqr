@@ -281,7 +281,7 @@ def runPDB2PQR(pdblist, ff,
             if atom.altLoc != "":
                 multoccupancy = 1
                 txt = "Warning: multiple occupancies found: %s in %s\n" % (atom.name, residue)
-                sys.stderr.write(txt)
+                # sys.stdout.write(txt)
         if multoccupancy == 1:
             myRoutines.warnings.append("WARNING: multiple occupancies found in %s,\n" % (residue))
             myRoutines.warnings.append("         at least one of the instances is being ignored.\n")
