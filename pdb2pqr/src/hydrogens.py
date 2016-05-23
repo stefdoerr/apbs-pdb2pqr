@@ -46,6 +46,7 @@
 import os
 import string
 import math
+from collections import OrderedDict
 
 from .definitions import *
 from .utilities import *
@@ -76,7 +77,7 @@ class HydrogenHandler(sax.ContentHandler):
         self.curatom = None
         self.curobj = None
         self.curholder = None
-        self.map = {}
+        self.map = OrderedDict()
 
     def startElement(self, name, attributes):
         """
@@ -794,7 +795,7 @@ class Flip(Optimize):
         self.atomlist = []
         self.hbonds = []
 
-        map = {}
+        map = OrderedDict()
 
         # Get all moveable names for this angle/residue pair
 
@@ -2015,7 +2016,7 @@ class hydrogenRoutines:
         self.protein = routines.protein
         self.optlist = []
         self.atomlist = []
-        self.resmap = {}
+        self.resmap = OrderedDict()
         self.hydrodefs = []
     
         handler = HydrogenHandler()
@@ -2387,8 +2388,8 @@ class hydrogenRoutines:
         self.routines.write("Optimization progress:\n")
         
         optlist = self.optlist
-        resmap = {}
-        connectivity = {}
+        resmap = OrderedDict()
+        connectivity = OrderedDict()
 
         # Initialize the detection progress
 
@@ -2482,7 +2483,7 @@ class hydrogenRoutines:
 
             self.debug("* Optimizeable to backbone *")
 
-            hbondmap = {}
+            hbondmap = OrderedDict()
             for obj in network:
                 for hbond in obj.hbonds:
                     if hbond.atom2 not in self.atomlist:
@@ -2507,7 +2508,7 @@ class hydrogenRoutines:
 
             self.debug("\n* Optimizeable to optimizeable *")
 
-            hbondmap = {}
+            hbondmap = OrderedDict()
             seenlist = []
             for obj in network:
                 for hbond in obj.hbonds:
@@ -2546,7 +2547,7 @@ class hydrogenRoutines:
 
             self.debug("\n* Water to Water *")
 
-            hbondmap = {}
+            hbondmap = OrderedDict()
             seenlist = []
             for obj in network:
                 for hbond in obj.hbonds:
@@ -2624,11 +2625,11 @@ class hydrogenRoutines:
                                    map)
         conf = []
         patchmap = []
-        refmap = {}
-        titrationstatemap = {}
-        tautomermap = {}
-        conformermap = {}
-        atommap = {}
+        refmap = OrderedDict()
+        titrationstatemap = OrderedDict()
+        tautomermap = OrderedDict()
+        conformermap = OrderedDict()
+        atommap = OrderedDict()
 
         # reference map from TOPOLOGY.xml
         for res in top.residues:
@@ -2667,7 +2668,7 @@ class hydrogenRoutines:
             atoms = ['H1','H2']
             refatoms = None
         elif name == 'NTR':
-            ntrmap = {}    # map for N-TERM
+            ntrmap = OrderedDict()    # map for N-TERM
 
             for tautomer in titrationstatemap["NTER"].tautomers:
                 for conformer in tautomermap[tautomer.name].conformers:
@@ -2677,8 +2678,8 @@ class hydrogenRoutines:
             atoms = ['H3', 'H2']
             refatoms = ['CA', 'H', 'N']
         elif name == 'CTR':
-            hmap = {}    # map for h atoms
-            nonhmap ={}    # map for refatoms
+            hmap = OrderedDict()    # map for h atoms
+            nonhmap =OrderedDict()    # map for refatoms
             conformernames = []
             for tautomer in titrationstatemap["CTER"].tautomers:
                 for conformer in tautomermap[tautomer.name].conformers:
@@ -2713,8 +2714,8 @@ class hydrogenRoutines:
                 atoms = ['HD21']
                 refatoms = ['ND2']
         elif name == 'ASH':
-            hmap = {}    # map for h atoms
-            nonhmap = {}    # map for refatoms
+            hmap = OrderedDict()    # map for h atoms
+            nonhmap = OrderedDict()    # map for refatoms
             conformernames = []
             reference = refmap['ASP']
             for tautomer in titrationstatemap["ASH"].tautomers:
@@ -2726,8 +2727,8 @@ class hydrogenRoutines:
             atoms = ['HD1', 'HD2']
             refatoms = ['OD1', 'CG', 'OD2']
         elif name == 'GLH':
-            hmap = {}    # map for h atoms
-            nonhmap ={}    # map for refatoms
+            hmap = OrderedDict()    # map for h atoms
+            nonhmap =OrderedDict()    # map for refatoms
             conformernames = []
             reference = refmap['GLU']
             for tautomer in titrationstatemap["GLH"].tautomers:
@@ -2881,7 +2882,7 @@ class OptimizationHolder:
             Initialize the class.
         """
         self.name = ""
-        self.map = {}
+        self.map = OrderedDict()
         self.opttype = ""
         self.optangle = ""
 

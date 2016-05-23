@@ -51,6 +51,8 @@ __author__ = "Todd Dolinsky"
 BACKBONE = ["N","CA","C","O","O2","HA","HN","H","tN"]
 
 import string
+from collections import OrderedDict
+
 from .pdb import *
 from .utilities import *
 from .quatfit import *
@@ -191,7 +193,7 @@ class Residue:
         self.iCode = sampleAtom.iCode
         #
         #
-        self.map = {}
+        self.map = OrderedDict()
 
         self.naname = None
 

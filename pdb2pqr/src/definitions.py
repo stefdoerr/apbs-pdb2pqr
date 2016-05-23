@@ -53,6 +53,8 @@ PATCHPATH = "dat/PATCHES.xml"
 import os
 import copy
 import re
+from collections import OrderedDict
+
 from xml import sax
 from .pdb import *
 from .utilities import *
@@ -314,7 +316,7 @@ class DefinitionResidue(Residue):
         """
         self.name = ""
         self.dihedrals = []
-        self.map = {}
+        self.map = OrderedDict()
         self.altnames = {}
         
     def __str__(self):
