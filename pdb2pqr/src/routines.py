@@ -119,7 +119,7 @@ class Routines:
         # logger.info(message.strip())
 
         out = ""
-        logger.info(message.strip())
+        logger.debug(message.strip())
         if self.verbose:
             for i in range(indent):
                 out += "\t"
