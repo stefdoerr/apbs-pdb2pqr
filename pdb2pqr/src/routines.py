@@ -66,6 +66,10 @@ NAS = ["A", "A5", "A3", "C", "C5", "C3", "G", "G5", "G3", "T", "T5", "T3", "U", 
 
 import math
 import copy
+import logging
+logger = logging.getLogger(__name__)
+
+
 from .pdb import *
 from .utilities import *
 from .quatfit import *
@@ -115,6 +119,7 @@ class Routines:
         # logger.info(message.strip())
 
         out = ""
+        logger.info(message.strip())
         if self.verbose:
             for i in range(indent):
                 out += "\t"

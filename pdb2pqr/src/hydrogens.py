@@ -47,6 +47,7 @@ import os
 import string
 import math
 from collections import OrderedDict
+import logging
 
 from .definitions import *
 from .utilities import *
@@ -56,6 +57,8 @@ from . import topology
 
 __date__ = "22 April 2009"
 __author__ = "Todd Dolinsky, Jens Erik Nielsen, Yong Huang"
+
+logger = logging.getLogger(__name__)
 
 HDEBUG = 0
 HYDPATH = "dat/HYDROGENS.xml"
@@ -220,6 +223,8 @@ class Optimize:
         """
             Easy way to turn on/off debugging
         """
+
+        logger.debug(txt)
         if HDEBUG: print(txt)
 
     @staticmethod
