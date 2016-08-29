@@ -16,13 +16,6 @@
     </atom>
   </residue>
   <residue>
-     <name>CYM</name>
-     <atom>
-       <name>H</name>
-       <useatomname>HN</useatomname>
-     </atom>
-  </residue>
-  <residue>
      <name>LYN</name> 
      <atom>   
         <name>HZ1</name>
@@ -35,20 +28,6 @@
        <name>H</name>
        <useatomname>H1</useatomname>
      </atom>
-   </residue>
-   <residue>
-       <name>NCYS</name>
-       <atom>
-          <name>HG</name>
-          <useatomname>HSG</useatomname>
-       </atom>
-   </residue>
-   <residue>
-       <name>CCYS</name> 
-       <atom>
-          <name>HG</name>
-          <useatomname>HSG</useatomname>
-       </atom>
    </residue>
    <residue>
        <name>NPRO</name>
