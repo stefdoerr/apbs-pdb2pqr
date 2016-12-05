@@ -304,7 +304,7 @@ def runPDB2PQR(pdblist, ff,
             print("Total time taken: %.2f seconds\n" % (time.time() - start))
 
         #Be sure to include None for missed ligand residues
-        return header, lines, None
+        return dict(header=header, lines=lines)
 
     #remove any future need to convert to lower case
     if not ff is None:
@@ -444,7 +444,10 @@ def runPDB2PQR(pdblist, ff,
     if verbose:
         print("Total time taken: %.2f seconds\n" % (time.time() - start))
 
-    return header, lines, missedligandresidues, myProtein
+    return dict(header=header, lines=lines,
+                missedligands=missedligandresidues,
+                protein=myProtein, routines=myRoutines)
+
 
 
 def mainCommand(argv):
@@ -709,30 +712,31 @@ Please cite your use of PDB2PQR as:
     # This would also do away with the redundent checks and such in
     # the Forcefield constructor.
     try:
-        header, lines, missedligands, _ = runPDB2PQR(pdblist,
-                                                  options.ff,
-                                                  outname = options.outname,
-                                                  ph = options.ph,
-                                                  verbose = options.verbose,
-                                                  selectedExtensions = options.active_extensions,
-                                                  ph_calc_method = options.ph_calc_method,
-                                                  ph_calc_options = ph_calc_options,
-                                                  extensionOptions = extensionOpts,
-                                                  clean = options.clean,
-                                                  neutraln = options.neutraln,
-                                                  neutralc = options.neutralc,
-                                                  ligand = options.ligand,
-                                                  assign_only = options.assign_only,
-                                                  chain = options.chain,
-                                                  drop_water = options.drop_water,
-                                                  debump = options.debump,
-                                                  opt = options.opt,
-                                                  typemap = options.typemap,
-                                                  userff = userfffile,
-                                                  usernames = usernamesfile,
-                                                  ffout = options.ffout,
-                                                  commandLine = commandLine,
-                                                  include_old_header = options.include_header)
+        pqr = runPDB2PQR(pdblist,
+                          options.ff,
+                          outname = options.outname,
+                          ph = options.ph,
+                          verbose = options.verbose,
+                          selectedExtensions = options.active_extensions,
+                          ph_calc_method = options.ph_calc_method,
+                          ph_calc_options = ph_calc_options,
+                          extensionOptions = extensionOpts,
+                          clean = options.clean,
+                          neutraln = options.neutraln,
+                          neutralc = options.neutralc,
+                          ligand = options.ligand,
+                          assign_only = options.assign_only,
+                          chain = options.chain,
+                          drop_water = options.drop_water,
+                          debump = options.debump,
+                          opt = options.opt,
+                          typemap = options.typemap,
+                          userff = userfffile,
+                          usernames = usernamesfile,
+                          ffout = options.ffout,
+                          commandLine = commandLine,
+                          include_old_header = options.include_header)
+        header, lines = pqr['header'], pqr['lines']
     except PDB2PQRError as er:
         print(er)
         sys.exit(2)

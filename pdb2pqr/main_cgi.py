@@ -581,12 +581,13 @@ def handleNonOpal(weboptions):
                 run_arguements['ph_calc_options']['output_dir']='%s%s%s/pdb2pka_output' % (INSTALLDIR, TMPDIR, name)
             
             
-            header, lines, missedligands, _ = runPDB2PQR(pdblist,
+            pqr = runPDB2PQR(pdblist,
                                                       weboptions.ff,
                                                       outname = pqrpath,
                                                       commandLine = weboptions.getCommandLine(),
                                                       **weboptions.getRunArguments())
-            
+            header, lines, missedligands = pqr['header'], pqr['lines'], pqr['missedligands']
+
             sys.stdout.close()
             sys.stderr.close()
             sys.stdout = orig_stdout
