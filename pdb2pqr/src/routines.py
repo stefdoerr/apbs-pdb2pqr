@@ -859,7 +859,17 @@ class Routines:
                 continue
             for atom in residue.atoms[:]:
                 if atom.isHydrogen():
-                    residue.removeAtom(atom.name)
+                    if atom.name in residue.map:
+                        residue.removeAtom(atom.name)
+                    elif atom.reference.name in residue.map:
+                        logger.info("In residue {:s} removing atom {:s} instead of {:s}".\
+                                    format(str(residue), atom.reference.name, atom.name))
+                        residue.removeAtom(atom.reference.name)
+                    else:
+                        logger.warning("H atom unexpectedly not found in {:s}, not {:s} nor {:s}". \
+                                       format(str(residue), atom.reference.name, atom.name))
+
+
 
     def repairHeavy(self):
         """
