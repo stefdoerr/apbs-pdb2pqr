@@ -22,9 +22,9 @@ class build_py(build_py):
 
 
 setup(name='pdb2pqr',
-      version='2.1.2a1',
+      version='2.1.2a9',
       url='http://www.poissonboltzmann.org/',
-      description="PDB2PQR: an automated pipeline for the setup of Poisson–Boltzmann electrostatics calculations",
+      description="PDB2PQR: an automated pipeline for the setup of Poisson-Boltzmann electrostatics calculations",
       long_description=read("pdb2pqr/README.md"),
       license="BSD",
       packages=['pdb2pqr',
