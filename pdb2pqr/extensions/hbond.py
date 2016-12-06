@@ -27,6 +27,7 @@ __author__ = "Todd Dolinsky, Michael J Bradley, Julie Mitchell, and Kyle Monson"
 #inter-domain allosteric communication pathways. Journal of Molecular Biology, 378, 
 #1155-1173, 2008.  http://dx.doi.org/10.1016/j.jmb.2008.03.010
 
+from pdb2pqr import extensions
 from ..src.utilities import distance, getAngle
 from ..src.routines import Cells
 from math import cos

@@ -7,6 +7,7 @@
 __date__ = "21 October 2011"
 __authors__ = "Kyle Monson and Emile Hogan"
 
+from pdb2pqr import extensions
 from ..src.hydrogens import Optimize
 #itertools FTW!
 from itertools import product, permutations, count

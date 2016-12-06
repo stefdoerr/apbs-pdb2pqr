@@ -11,6 +11,7 @@
 __date__ = "April 2007"
 __author__ = "Julie C. Mitchell"
 
+from pdb2pqr import extensions
 from ..src.utilities import distance
 from ..src.routines import Cells
 
