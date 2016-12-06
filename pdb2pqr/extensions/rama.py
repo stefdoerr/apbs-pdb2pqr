@@ -9,8 +9,7 @@
 
 __date__ = "17 February 2006"
 __author__ = "Mike Bradley, Todd Dolinsky"
-
-from pdb2pqr import extensions
+  
 from ..src.utilities import getDihedral
 
 def addExtensionOptions(extensionGroup):

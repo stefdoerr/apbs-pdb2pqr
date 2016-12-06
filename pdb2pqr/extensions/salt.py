@@ -16,7 +16,6 @@
 __date__ = "25 August 2006"
 __author__ = "Mike Bradley"
 
-from pdb2pqr import extensions
 from ..src.utilities import distance
 from ..src.routines import Cells
 

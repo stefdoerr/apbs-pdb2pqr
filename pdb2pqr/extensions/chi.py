@@ -11,7 +11,6 @@
 __date__ = "17 February 2006"
 __author__ = "Todd Dolinsky"
 
-from pdb2pqr import extensions
 from ..src.utilities import getDihedral
 
 def usage():
