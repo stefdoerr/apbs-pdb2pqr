@@ -166,6 +166,7 @@ def getPQRBaseFileName(filename):
         return root
     return filename
 
+
 def sortDictByValue(inputdict):
     """
         Sort a dictionary by its values
@@ -175,11 +176,21 @@ def sortDictByValue(inputdict):
         Returns
             items: The dictionary sorted by value (list)
     """
-    items = [(v, k) for k, v in list(inputdict.items())]
-    items.sort()
-    items.reverse()             
-    items = [ k for v, k in items]
-    return items
+
+    # TONI This function returns keys of a dictionary, ordered by value, as a list.
+    # Rewriting the above according to http://stackoverflow.com/a/613218/4765713 because
+    # Python3 forbids comparisons of uncomparables
+
+    # items = [(v, k) for k, v in list(inputdict.items())]
+    # items.sort()
+    # items.reverse()
+    # items = [ k for v, k in items]
+    # return items
+
+    import operator
+    s = sorted(inputdict.items(), key=operator.itemgetter(1), reverse=True)
+    return [x[0] for x in s]
+
 
 def shortestPath(graph, start, end, path=[]):
     """
