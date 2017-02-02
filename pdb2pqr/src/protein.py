@@ -93,7 +93,10 @@ class Protein:
 
                 if record.chainID == "" and numChains > 1 and record.resName not in ["WAT","HOH"]:
                     # Assign a chain ID
-                    record.chainID = string.ascii_uppercase[count]
+                    try:
+                        record.chainID = (string.ascii_uppercase+string.ascii_lowercase+string.digits)[count]
+                    except:
+                        raise Exception("Too many chains, sorry. Consider preparing subsets.")
 
                 chainID = record.chainID
                 resSeq = record.resSeq
