@@ -770,5 +770,15 @@ Please cite your use of PDB2PQR as:
         input.dumpPickle()
 
 
+# Follow https://chriswarrick.com/blog/2014/09/15/python-apps-the-right-way-entry_points-and-scripts/
+def main(args=None):
+    """The main routine."""
+    if args is None:
+        args = sys.argv[1:]
+    mainCommand(args)
+
+
 if __name__ == "__main__":
-    mainCommand(sys.argv)
+    main()
+
+

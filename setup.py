@@ -22,7 +22,7 @@ class build_py(build_py):
 
 
 setup(name='pdb2pqr',
-      version='2.1.2a9',
+      version='2.1.2+htmd3',
       url='http://www.poissonboltzmann.org/',
       description="PDB2PQR: an automated pipeline for the setup of Poisson-Boltzmann electrostatics calculations",
       long_description=read("pdb2pqr/README.md"),
@@ -35,5 +35,9 @@ setup(name='pdb2pqr',
                 ],
       package_data={'pdb2pqr': ['dat/*', 'NEWS', 'README.md', 'COPYING', 'AUTHORS']},
       cmdclass=dict(build_py=build_py),
-      scripts=["pdb2pqr_cli"]
+      entry_points={
+          'console_scripts': [
+              'pdb2pqr_cli = pdb2pqr.main:main'
+          ]
+      }
       )
