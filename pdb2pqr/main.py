@@ -774,7 +774,7 @@ Please cite your use of PDB2PQR as:
 def main(args=None):
     """The main routine."""
     if args is None:
-        args = sys.argv[1:]
+        args = sys.argv
     mainCommand(args)
 
 
