@@ -278,7 +278,7 @@ class Patch:
         """
         self.name = ""
         self.applyto = ""
-        self.map = {}
+        self.map = OrderedDict()
         self.remove = []
         self.altnames = {}
         self.dihedrals = []
