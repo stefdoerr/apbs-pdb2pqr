@@ -87,9 +87,9 @@ class Psize:
     def parseLines(self, lines):
         """ Parse the lines """
         for line in lines:
-            if string.find(line,"ATOM") == 0:
-                subline = string.replace(line[30:], "-", " -")
-                words = string.split(subline)
+            if str.find(line,"ATOM") == 0:
+                subline = str.replace(line[30:], "-", " -")
+                words = str.split(subline)
                 if len(words) < 5:    
                     continue
                 self.gotatom += 1
@@ -103,12 +103,12 @@ class Psize:
                         self.minlen[i] = center[i]-rad
                     if self.maxlen[i] == None or center[i]+rad > self.maxlen[i]:
                         self.maxlen[i] = center[i]+rad
-            elif string.find(line, "HETATM") == 0:
+            elif str.find(line, "HETATM") == 0:
                 self.gothet = self.gothet + 1
                 # Special handling for no ATOM entries in the pqr file, only HETATM entries
                 if self.gotatom == 0:
-                    subline = string.replace(line[30:], "-", " -")
-                    words = string.split(subline)
+                    subline = str.replace(line[30:], "-", " -")
+                    words = str.split(subline)
                     if len(words) < 5:    
                         continue
                     self.q = self.q + float(words[3])
@@ -190,8 +190,8 @@ class Psize:
             if nsmem < self.constants["gmemceil"]: break
             else:
                 i = nsmall.index(max(nsmall))
-                nsmall[i] = 32 * ((nsmall[i] - 1)/32 - 1) + 1
-                if nsmall <= 0:
+                nsmall[i] = 32 * ((nsmall[i] - 1)/32 - 1) + 1 # TG check integer division
+                if nsmall[i] <= 0:
                     stdout.write("You picked a memory ceiling that is too small\n")
                     sys.exit(0)        
 
