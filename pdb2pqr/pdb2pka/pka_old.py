@@ -502,7 +502,7 @@ def pre_init(pdbfilename=None,
     size=src.psize.Psize()
 
     method=""
-    async=0
+    asynch=0
     split=0
     import inputgen_pKa
     igen = inputgen_pKa.inputGen(pdbfilename)

@@ -764,8 +764,8 @@ Please cite your use of PDB2PQR as:
         size = psize.Psize()
         size.parseInput(outpath)
         size.runPsize(outpath)
-        async = 0 # No async files here!
-        input = inputgen.Input(outpath, size, method, async, potdx=True)
+        asynch = 0 # No asynch files here!
+        input = inputgen.Input(outpath, size, method, asynch, potdx=True)
         input.printInputFiles()
         input.dumpPickle()
 

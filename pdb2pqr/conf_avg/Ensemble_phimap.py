@@ -195,7 +195,7 @@ class conf_avg:
         #
         #
 		method=""
-		async=0
+		asynch=0
 		split=0
 		import pdb2pka.inputgen_pKa as IP
 		igen = IP.inputGen(currentPDB)
